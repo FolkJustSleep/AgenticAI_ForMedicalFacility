@@ -1,29 +1,30 @@
 import chromadb
 from langchain_ollama import OllamaEmbeddings
-from chromadb.utils.embedding_functions import EmbeddingFunction
+from chromadb.utils.embedding_functions import OllamaEmbeddingFunction
 
 CHROMA_PATH = r"data/chroma_db"
 embeddings = OllamaEmbeddings(
-    model="qwen3-embedding"
+    model="qwen3-embedding:8b"
 )
+
 def setup_chroma_db():
     chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
     collection_name ="Medical_Articles"
-    collection = chroma_client.get_or_create_collection(name=collection_name, embedding_function=EmbeddingFunction(
-        embed_method=embeddings.embed_query,
-        normalize=False
-    ))
+    collection = chroma_client.get_or_create_collection(name=collection_name , embedding_function=OllamaEmbeddingFunction(model_name="qwen3-embedding",url="http://localhost:11434"))
     return collection
 
 def embed_text(text: str):
     input_text = []
-    for content in text:
+    for i, content in enumerate(text):
         input_text.append(content.page_content)
-    response = embeddings.embed_documents([input_text[0],input_text[1]])
-    print(f"Embedding response: {response}")  # Print the full response for debugging
+        print(f"Preparing text for embedding.[{i}]")
+    response = embeddings.embed_documents(input_text)
+    print("Embedding completed.")
+    # print(f"Embedding response: {response}") 
     return response
 
 def query_chuncks(query: str, collection):
+    print(f"Querying chunks for: {query}")
     query_embedding = embeddings.embed_query(query)
     results = collection.query(
         query_embeddings=[query_embedding],

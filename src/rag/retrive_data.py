@@ -12,7 +12,7 @@ def split_data(documents):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100, separators=["\n\n", "\n", " ", ""])
     texts = text_splitter.split_documents(documents)
     print(f"Split into {len(texts)} chunks of text")
-    print(f"First text chunk: {texts[0].page_content}")  # Print first 500 characters of the first chunk
+    # print(f"First text chunk: {texts[0].page_content}")
     return texts
 
 if __name__ == "__main__":
