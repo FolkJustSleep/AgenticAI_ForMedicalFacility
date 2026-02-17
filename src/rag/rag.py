@@ -8,10 +8,11 @@ OLLAMA_HOST = os.getenv("OLLAMA_HOST")
 
 llm = ChatOllama(model="medllama2:7b", baseurl=OLLAMA_HOST)
 
-def askllm(user_messages: str, collection):
+def askllm(query: str, user_messages: str)-> tuple[str, Exception]:
+    collection = setup_chroma_db()
     print(f"User message: {user_messages}")
     # PROMPT_CONTEXT = ""
-    results = query_chuncks(user_messages, collection)   
+    results = query_chuncks(query, collection)   
     PROMPT_CONTEXT = results['documents']
     messages = [
         (

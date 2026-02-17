@@ -6,7 +6,7 @@ from src.rag.embedding_data import setup_chroma_db
 from src.service.LLM_logic import AgentsicAI
 from src.service.AskLLM import generate_answer
 from model.chat_test import ChatTestRequest, ChatTestResponse
-
+import src.gateway.Line_gateway as gateway 
 # print("Starting RAG setup...")
 
 app = FastAPI()
@@ -32,6 +32,7 @@ def chat_endpoint(user_message: ChatTestRequest):
     return ChatTestResponse(response=AgentsicAI_response)
 
 @app.post("/webhook/line-webhook")
-def line_webhook():
+def line_webhook(event: dict):
+    gateway.Handle_line_webhook(event)
     return {"status": "ok"}
 

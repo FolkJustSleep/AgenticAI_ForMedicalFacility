@@ -58,7 +58,7 @@ def AgentsicAI(user_question: str) -> tuple[str, Exception]:
                 tool_name = tool_call['name']
                 if tool_name == "answer_medical_question":
                     print("Calling answer_medical_question tool...")
-                    tool_result, err = generate_answer(tool_call['args']['user_question'], user_question)
+                    tool_result, err = askllm(tool_call['args']['user_question'], user_question)
                     if err is not None:
                         return None, err
                     return tool_result, None
