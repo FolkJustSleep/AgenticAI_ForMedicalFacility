@@ -9,10 +9,12 @@ backoff
 bcrypt
 build
 certifi
+cffi
 charset-normalizer
 chromadb
 click
 clickhouse-connect
+cryptography
 dataclasses-json
 distro
 dnspython
@@ -24,9 +26,13 @@ fastapi-cli
 fastapi-cloud-cli
 fastar
 filelock
+filetype
 flatbuffers
 frozenlist
 fsspec
+ftfy
+google-auth
+google-genai
 googleapis-common-protos
 grpcio
 h11
@@ -41,6 +47,7 @@ idna
 importlib_metadata
 importlib_resources
 Jinja2
+jiter
 joblib
 jsonpatch
 jsonpointer
@@ -51,6 +58,7 @@ langchain
 langchain-classic
 langchain-community
 langchain-core
+langchain-google-genai
 langchain-ollama
 langchain-text-splitters
 langgraph
@@ -72,6 +80,7 @@ numpy
 oauthlib
 ollama
 onnxruntime
+openai
 opentelemetry-api
 opentelemetry-exporter-otlp-proto-common
 opentelemetry-exporter-otlp-proto-grpc
@@ -83,10 +92,15 @@ ormsgpack
 overrides
 packaging
 pandas
+pillow
 posthog
 propcache
 protobuf
+psycopg2-binary
+pyasn1
+pyasn1_modules
 pybase64
+pycparser
 pydantic
 pydantic-extra-types
 pydantic-settings
@@ -109,6 +123,7 @@ rich
 rich-toolkit
 rignore
 rpds-py
+rsa
 safetensors
 scikit-learn
 scipy
@@ -116,6 +131,7 @@ sentence-transformers
 sentry-sdk
 shellingham
 six
+sniffio
 SQLAlchemy
 starlette
 sympy
@@ -127,6 +143,7 @@ tqdm
 transformers
 typer
 typer-slim
+typhoon-ocr
 typing-inspect
 typing-inspection
 typing_extensions
@@ -135,6 +152,7 @@ uuid_utils
 uvicorn
 uvloop
 watchfiles
+wcwidth
 websocket-client
 websockets
 xxhash

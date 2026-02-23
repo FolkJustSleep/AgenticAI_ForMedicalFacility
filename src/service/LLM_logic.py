@@ -45,9 +45,11 @@ def AgentsicAI(user_question: str) -> tuple[str, Exception]:
         ),
         ("human", user_question),
     ]
+    print(f"User question: {user_question}")
     try :
+        print("Invoking LLM with tools...")
         ai_msg = Agents_llm.invoke(messages)
-        # print(ai_msg.content)
+        print(ai_msg.content)
         if isinstance(ai_msg, AIMessage) and ai_msg.tool_calls:
             # print(ai_msg.tool_calls)
             if ai_msg.tool_calls:
@@ -61,6 +63,10 @@ def AgentsicAI(user_question: str) -> tuple[str, Exception]:
                     tool_result, err = askllm(tool_call['args']['user_question'], user_question)
                     if err is not None:
                         return None, err
+                    return tool_result, None
+                elif tool_name == "doctor_appointment":
+                    print("Calling doctor_appointment tool...")
+                    tool_result = doctor_appointment(tool_call['args']['date'], tool_call['args']['departments'])
                     return tool_result, None
     except Exception as e:
         print(f"Error during LLM invocation: {e}")

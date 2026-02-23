@@ -1,8 +1,11 @@
 if __name__ != "__main__":
-    from src.rag.retrive_data import load_data, split_data
+    from src.rag.retrive_data import load_data, split_texts
     from src.rag.embedding_data import embed_text, setup_chroma_db, query_chuncks
 from langchain_ollama import ChatOllama
+from dotenv import load_dotenv
 import os
+
+load_dotenv()
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST")
 
@@ -19,12 +22,13 @@ def askllm(query: str, user_messages: str)-> tuple[str, Exception]:
             "system",
             f"""You are a helpful assistant that answer the user questions. Use the following context from the documents to provide accurate answers:\n
             This is the context you have retrieved from the documents:\n
-            {PROMPT_CONTEXT} """,
+            {PROMPT_CONTEXT} , if the question come with choice, please answer with the best one. if it doesn't come with choice, just answer the question based on the context and explain the context. if you don't know the answer, just say you don't know don't try to make up an answer.""",
         ),
         ("human", user_messages),
     ]
     try : 
         ai_msg = llm.invoke(messages)
+        print(f"LLM Response: {ai_msg.content}")
         return ai_msg.content, None
     except Exception as e:
         print(f"Error during LLM invocation: {e}")
@@ -39,7 +43,7 @@ def setup_rag():
     
     documents = load_data()
 
-    texts = split_data(documents)
+    texts = split_texts(documents)
 
     embedding = embed_text(texts)
 
@@ -49,7 +53,7 @@ def setup_rag():
             continue
         collection.upsert(
             ids=[f"doc_{i}"],
-            documents=[text.page_content],
+            documents=[text],
             embeddings=[embedding[i]]
         )
         print(f"Inserted document doc_{i} into the database.")
@@ -57,7 +61,7 @@ def setup_rag():
     # print(f"LLM Response: {result}")
     return collection
 if __name__ == "__main__":
-    from retrive_data import load_data, split_data
+    from retrive_data import load_data, split_texts
     from embedding_data import embed_text, setup_chroma_db, query_chuncks
     print("Running RAG setup...")
     collection = setup_rag()

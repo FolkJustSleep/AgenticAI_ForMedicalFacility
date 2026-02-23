@@ -7,9 +7,13 @@ from src.service.LLM_logic import AgentsicAI
 from src.service.AskLLM import generate_answer
 from model.chat_test import ChatTestRequest, ChatTestResponse
 import src.gateway.Line_gateway as gateway 
+from data.postgres import get_connection
 # print("Starting RAG setup...")
 
 app = FastAPI()
+conn = get_connection()
+if conn == False:
+    print("Failed to connect to the database.")
 
 @app.get("/")
 def read_root():
@@ -31,8 +35,11 @@ def chat_endpoint(user_message: ChatTestRequest):
         return ChatTestResponse(response=str(err), status_code=500)
     return ChatTestResponse(response=AgentsicAI_response)
 
-@app.post("/webhook/line-webhook")
+@app.post("/webhook/line-webhook", response_model=ChatTestResponse)
 def line_webhook(event: dict):
-    gateway.Handle_line_webhook(event)
-    return {"status": "ok"}
+    response , err = gateway.Handle_line_webhook(event)
+    if err is not None:
+        return ChatTestResponse(response=str(err), status_code=500)
+    return ChatTestResponse(response=response, status_code=200)
+
 
