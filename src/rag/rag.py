@@ -1,5 +1,5 @@
 if __name__ != "__main__":
-    from src.rag.retrive_data import load_data, split_texts
+    from src.rag.retrive_data import load_data, split_texts, split_data, OCR_load_data
     from src.rag.embedding_data import embed_text, setup_chroma_db, query_chuncks
 from langchain_ollama import ChatOllama
 from dotenv import load_dotenv
@@ -12,11 +12,13 @@ OLLAMA_HOST = os.getenv("OLLAMA_HOST")
 llm = ChatOllama(model="medllama2:7b", baseurl=OLLAMA_HOST)
 
 def askllm(query: str, user_messages: str)-> tuple[str, Exception]:
+    print("Asking LLM...")
     collection = setup_chroma_db()
     print(f"User message: {user_messages}")
     # PROMPT_CONTEXT = ""
     results = query_chuncks(query, collection)   
     PROMPT_CONTEXT = results['documents']
+    print(f"Retrieved context: {PROMPT_CONTEXT}")
     messages = [
         (
             "system",
@@ -41,10 +43,13 @@ def setup_rag():
     collection = setup_chroma_db()
     exist_ids = collection.get()['ids']
     
-    documents = load_data()
+    documents = OCR_load_data()
+    # print(type(documents))
 
+    # texts = split_data(documents)
+    # print("Successfully split documents into chunks.")
     texts = split_texts(documents)
-
+    # print("Text: ", texts[1:10])
     embedding = embed_text(texts)
 
     for i, text in enumerate(texts):
@@ -61,7 +66,7 @@ def setup_rag():
     # print(f"LLM Response: {result}")
     return collection
 if __name__ == "__main__":
-    from retrive_data import load_data, split_texts
+    from retrive_data import load_data, split_texts, split_data, OCR_load_data
     from embedding_data import embed_text, setup_chroma_db, query_chuncks
     print("Running RAG setup...")
     collection = setup_rag()
