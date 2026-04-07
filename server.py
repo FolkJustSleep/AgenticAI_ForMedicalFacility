@@ -1,4 +1,5 @@
 from typing import Union
+import os
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 # from src.rag.rag import askllm
@@ -43,3 +44,6 @@ def line_webhook(event: dict):
     return ChatTestResponse(response=response, status_code=200)
 
 
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=os.getenv("PORT", 8000))
