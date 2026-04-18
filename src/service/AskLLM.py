@@ -4,8 +4,10 @@ import os
 from src.rag.embedding_data import setup_chroma_db
 from src.rag.rag import query_chuncks
 
-
-collection = setup_chroma_db()
+try:
+    collection = setup_chroma_db()
+except Exception as e:
+    print(f"Error setting up Chroma DB: {e}")
 
 def generate_answer(query: str, user_messages: str = "") -> tuple[str, Exception]:
     print(f"User message: {query}")
