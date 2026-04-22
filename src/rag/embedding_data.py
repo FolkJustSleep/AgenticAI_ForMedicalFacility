@@ -1,11 +1,15 @@
+import os
+
 import chromadb
 from langchain_ollama import OllamaEmbeddings
 from chromadb.utils.embedding_functions import OllamaEmbeddingFunction
+from sentence_transformers import SentenceTransformer
 
 CHROMA_PATH = r"data/chroma_db"
-embeddings = OllamaEmbeddings(
-    model="qwen3-embedding:8b"
-)
+# embeddings = OllamaEmbeddings(
+#     model="qwen3-embedding:8b"
+# )
+embeddings = SentenceTransformer("Qwen/Qwen3-Embedding-8B" , token=os.getenv("HF_TOKEN"))
 
 def setup_chroma_db():
     chroma_client = chromadb.PersistentClient(path=CHROMA_PATH)
@@ -19,14 +23,16 @@ def embed_text(text: list[str]):
     # for i, content in enumerate(text):
     #     input_text.append(content.page_content)
         # print(f"Preparing text for embedding.[{i}]")
-    response = embeddings.embed_documents(text)
+    # response = embeddings.embed_documents(text)
+    response = embeddings.encode(text, show_progress_bar=True)
     print("Embedding completed.")
     # print(f"Embedding response: {response}") 
     return response
 
 def query_chuncks(query: str, collection):
     print(f"Querying chunks for: {query}")
-    query_embedding = embeddings.embed_query(query)
+    # query_embedding = embeddings.embed_query(query)
+    query_embedding = embeddings.encode(query)
     results = collection.query(
         query_embeddings=[query_embedding],
         n_results=10

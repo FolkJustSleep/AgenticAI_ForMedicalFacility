@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 
-from langchain_ollama import ChatOllama
+# from langchain_ollama import ChatOllama
 from google import genai
 from dotenv import load_dotenv
 import requests
@@ -18,40 +18,49 @@ from src.rag.embedding_data import embed_text, setup_chroma_db, query_chuncks
 
 load_dotenv()
 
-OLLAMA_HOST = os.getenv("OLLAMA_HOST")
+# OLLAMA_HOST = os.getenv("OLLAMA_HOST")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI = genai.Client(api_key=GEMINI_API_KEY)
 
-llm = ChatOllama(model="medllama2:7b", baseurl=OLLAMA_HOST)
+# llm = ChatOllama(model="medllama2:7b", baseurl=OLLAMA_HOST)
 
 def askllm(query: str, user_messages: str)-> tuple[str, Exception]:
     print("Asking LLM...")
     collection = setup_chroma_db()
     # print(f"User message: {user_messages}")
     # PROMPT_CONTEXT = ""
-    response = GEMINI.models.generate_content(
-        model="gemini-3.1-flash-lite-preview",
-        contents=f"Translate the following sentence from English to Thai Just translate and don't add anything else:\n{query}")
-    query = response.text
+    print("Translating user question for retrieval")
+    # response = GEMINI.models.generate_content(
+    #     model="gemini-3-flash-preview",
+    #     contents=f"Translate the following sentence from English to Thai Just translate and don't add anything else:\n{query}")
+    # query = response.text
+    ai_msg = requests.post('https://swuai.swu.ac.th/swu/api/service/chat', headers={'Authorization': f'Bearer {os.getenv("SWU_AI_API_KEY")}'}, json={"user_id": os.getenv("SWU_AI_USER_ID"), "model": "google/gemini-3-flash-preview", "content": f"Translate the following context from Thai to English just translate and don't add anything else:\n{query}"})
+    query = ai_msg.json().get('choices')[0].get('message').get('content')
+
     print(f"Translated user question for retrieval: {query}")
     results = query_chuncks(query, collection)   
     PROMPT_CONTEXT = results['documents']
     translated_context = ""
     try: 
-        response = GEMINI.models.generate_content(
-            model="gemini-3.1-flash-lite-preview",
-            contents=f"Translate the following context from Thai to English just translate and don't add anything else:\n{PROMPT_CONTEXT}")
-        # print(f"Translation response: {response.text}")
-        translated_context += response.text + "\n"
+        # response = GEMINI.models.generate_content(
+        #     model="gemini-3-flash-preview",
+        #     contents=f"Translate the following context from Thai to English just translate and don't add anything else:\n{PROMPT_CONTEXT}")
+        # # print(f"Translation response: {response.text}")
+        # translated_context += response.text + "\n"
+        ai_msg = requests.post('https://swuai.swu.ac.th/swu/api/service/chat', headers={'Authorization': f'Bearer {os.getenv("SWU_AI_API_KEY")}'}, json={"user_id": os.getenv("SWU_AI_USER_ID"), "model": "google/gemini-3-flash-preview", "content": f"Translate the following context from Thai to English just translate and don't add anything else:\n{PROMPT_CONTEXT}"})
+        translated_context = ai_msg.json().get('choices')[0].get('message').get('content')
     except Exception as e:
         print(f"Error during translation: {e}")
         return None, e
     print("Successfully translated context.")
     try:
-        response = GEMINI.models.generate_content(
-            model="gemini-3.1-flash-lite-preview",
-            contents=f"Translate the following sentence from Thai to English Just translate and don't add anything else:\n{user_messages}")
-        Quesions = response.text
+        # response = GEMINI.models.generate_content(
+        #     model="gemini-3-flash-preview",
+        #     contents=f"Translate the following sentence from Thai to English Just translate and don't add anything else:\n{user_messages}")
+        # Quesions = response.text
+        ai_msg = requests.post('https://swuai.swu.ac.th/swu/api/service/chat', headers={'Authorization': f'Bearer {os.getenv("SWU_AI_API_KEY")}'}, json={"user_id": os.getenv("SWU_AI_USER_ID"), "model": "google/gemini-3-flash-preview", "content": f"Translate the following context from Thai to English just translate and don't add anything else:\n{user_messages}"})
+        Quesions = ai_msg.json().get('choices')[0].get('message').get('content')
+
     except Exception as e:
         print(f"Error during user message translation: {e}")
         return None, e
@@ -82,11 +91,15 @@ def askllm(query: str, user_messages: str)-> tuple[str, Exception]:
         ai_msg = requests.post('https://swuai.swu.ac.th/swu/api/service/chat', headers={'Authorization': f'Bearer {os.getenv("SWU_AI_API_KEY")}'}, json={"user_id": os.getenv("SWU_AI_USER_ID"), "model": "openai/gpt-5", "content": messages})
         # print(f"LLM Response: {ai_msg.content}")
         ai_msg_content = ai_msg.json().get('choices')[0].get('message').get('content')
-        translated_response = GEMINI.models.generate_content(
-            model="gemini-3.1-flash-lite-preview",
-            contents=f"Translate the following sentence from English to Thai Just translate and don't add anything else:\n{ai_msg_content}")
-        print(f"Translated LLM response: {translated_response.text}")
-        return translated_response.text, None
+        # translated_response = GEMINI.models.generate_content(
+        #     model="gemini-3-flash-preview",
+        #     contents=f"Translate the following sentence from English to Thai Just translate and don't add anything else:\n{ai_msg_content}")
+        ai_msg = requests.post('https://swuai.swu.ac.th/swu/api/service/chat', headers={'Authorization': f'Bearer {os.getenv("SWU_AI_API_KEY")}'}, json={"user_id": os.getenv("SWU_AI_USER_ID"), "model": "google/gemini-3-flash-preview", "content": f"Translate the following sentence from English to Thai Just translate and don't add anything else:\n{ai_msg_content}"})
+        translated_response = ai_msg.json().get('choices')[0].get('message').get('content')
+        # print(f"Translated LLM response: {translated_response.text}")
+        # return translated_response.text, None
+        print(f"Translated LLM response: {translated_response}")
+        return translated_response, None
     except Exception as e:
         print(f"Error during LLM invocation: {e}")
         return None, e

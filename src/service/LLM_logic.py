@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import requests
 from unittest import result
 from dotenv import load_dotenv
 from google import genai
@@ -9,6 +10,7 @@ from langchain.messages import AIMessage
 from langchain.agents import create_agent
 from src.rag.rag import askllm
 from src.service.schedule_manage import DEFAULT_SLOT_MINUTES, book_doctor_appointment
+from langchain_google_genai import ChatGoogleGenerativeAI
 if __name__ != "__main__":
     from src.service.AskLLM import generate_answer
 
@@ -61,15 +63,18 @@ def doctor_appointment(doctor_name: str,
     except Exception as e:        
         return f"Error: {str(e)}"
 
-Agents_llm = ChatOllama(model="llama3.2:3b", baseurl="https://ollama.com", apikey=LLM_API_KEY).bind_tools([answer_medical_question, doctor_appointment])
-# Agents_llm = ChatOllama(model="llama3.2:3b", apikey=LLM_API_KEY).bind_tools([answer_medical_question, doctor_appointment])
+# Agents_llm = ChatOllama(model="llama3.2:3b", baseurl="https://ollama.com", apikey=LLM_API_KEY).bind_tools([answer_medical_question, doctor_appointment])
+Agents_llm = ChatOllama(model="llama3.2:3b", apikey=LLM_API_KEY).bind_tools([answer_medical_question, doctor_appointment])
+# Agents_llm = ChatGoogleGenerativeAI(model="gemini-3-flash-preview", api_key=GEMINI_API_KEY).bind_tools([answer_medical_question, doctor_appointment])
 
 
 def AgentsicAI(user_question: str) -> tuple[str, Exception]:
-    response = GEMINI.models.generate_content(
-        model="gemini-3.1-flash-lite-preview",
-        contents=f"Translate the following sentence from Thai to English Just translate and don't add anything else:\n{user_question}")
-    translated_user_question = response.text
+    # response = GEMINI.models.generate_content(
+    #     model="gemini-3-flash-preview",
+    #     contents=f"Translate the following sentence from Thai to English Just translate and don't add anything else:\n{user_question}")
+    # translated_user_question = response.text
+    ai_msg = requests.post('https://swuai.swu.ac.th/swu/api/service/chat', headers={'Authorization': f'Bearer {os.getenv("SWU_AI_API_KEY")}'}, json={"user_id": os.getenv("SWU_AI_USER_ID"), "model": "google/gemini-3-flash-preview", "content": f"Translate the following sentence from English to Thai Just translate and don't add anything else:\n{user_question}"})
+    translated_user_question = ai_msg.json().get('choices')[0].get('message').get('content')
     print(f"Translated user question: {translated_user_question}")
     messages = [
         (
@@ -111,7 +116,9 @@ def AgentsicAI(user_question: str) -> tuple[str, Exception]:
         return None, e
 
 if __name__ == "__main__":
-    from AskLLM import generate_answer
+    # from AskLLM import generate_answer
+    from rag.rag import askllm
+    from schedule_manage import DEFAULT_SLOT_MINUTES, book_doctor_appointment
     question = input("Enter your medical question: ")
     answer, err = AgentsicAI(question)
     if err is not None:
